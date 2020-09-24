@@ -25,8 +25,12 @@ public class ApprovalFlowService {
     }
 
     public static ApprovalFlowService getInstance(){
-        if (approvalFlowServiceInstance == null){
-            approvalFlowServiceInstance = new ApprovalFlowService();
+        if (approvalFlowServiceInstance == null) {
+            synchronized (ApprovalFlowService.class) {
+                if (approvalFlowServiceInstance == null ){
+                    approvalFlowServiceInstance = new ApprovalFlowService();
+                }
+            }
         }
         return approvalFlowServiceInstance;
     }

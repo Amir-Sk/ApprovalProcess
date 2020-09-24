@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.StringJoiner;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import lombok.NonNull;
 import model.ApprovalFlow;
 import model.Decision;
@@ -17,16 +20,27 @@ public class PlanService {
 
     private PlanService(){
         if (planServiceInstance != null){
-            throw new RuntimeException("Please use getInstance() in order to get the single instance.");
+            throw new RuntimeException("Singleton already exist, "
+                + "Please use getInstance() in order to get the singleton instance.");
         }
         dateAndTime = DateAndTime.getInstance();
     }
 
+    /* If this method was defined 'synchronized', sequential access
+    * was given for threads to access the Singleton instance,
+    * hence performance issues would have come up.
+    * To reduce the performance issue everytime, I've chose
+    * to use the "Double-Checked locking pattern"
+    * */
+    /* An example for Singleton double check pattern  */
     public static PlanService getInstance(){
-        if (planServiceInstance == null) {
+        if (planServiceInstance == null){
+            // The monitored object for the 'synchronized' declaration is a class object(rather than instance)
             synchronized (PlanService.class) {
-                if (planServiceInstance == null)
+                if(planServiceInstance == null){
+
                     planServiceInstance = new PlanService();
+                }
             }
         }
         return planServiceInstance;
@@ -73,6 +87,29 @@ public class PlanService {
         joiner.add("Decision timestamp: ".concat(dec.getTimestamp()));
         joiner.add("Decision: ".concat(dec.isApproved() ? "Approved" : "Declined"));
         joiner.add("Comment: ".concat(dec.getComment()));
+    }
+
+    public void main(){
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.submit( () -> {
+           String threadName = Thread.currentThread().getName();
+           System.out.print("Hello " + threadName);
+        });
+        try {
+            System.out.print("Attempting to shutdown process");
+            executor.shutdown();
+            executor.awaitTermination(5, TimeUnit.SECONDS);
+
+        } catch (InterruptedException e) {
+            System.err.println("Tasks were interrupted");
+        }
+        finally {
+            if (!executor.isTerminated()){
+                System.out.print("Cancel non-finished tasks");
+            }
+            executor.shutdownNow();
+            System.out.print("shutdown processes was forced");
+        }
     }
 
 }

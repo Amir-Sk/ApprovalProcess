@@ -6,6 +6,7 @@ import model.Decision;
 import model.User;
 
 public class DecisionService {
+
     private static volatile DecisionService decisionServiceInstance;
 
     private DecisionService(){
@@ -16,7 +17,11 @@ public class DecisionService {
 
     public static DecisionService getInstance(){
         if (decisionServiceInstance == null){
-            decisionServiceInstance = new DecisionService();
+            synchronized (DecisionService.class){
+                if(decisionServiceInstance == null) {
+                    decisionServiceInstance = new DecisionService();
+                }
+            }
         }
         return decisionServiceInstance;
     }

@@ -4,7 +4,26 @@ import model.User;
 
 public class UserService {
 
-    public static User createUser(String name, String email){
+    private static volatile UserService userServiceInstance;
+
+    public static UserService getInstance(){
+        if (userServiceInstance == null) {
+            synchronized (UserService.class) {
+                if (userServiceInstance == null ){
+                    userServiceInstance = new UserService();
+                }
+            }
+        }
+        return userServiceInstance;
+    }
+
+    private UserService(){
+        if (userServiceInstance != null){
+            throw new RuntimeException("Please use getInstance() in order to get the single instance.");
+        }
+    }
+
+    public User createUser(String name, String email){
         if (!name.isBlank() && !email.isBlank()) {
             return new User(name, email);
         }

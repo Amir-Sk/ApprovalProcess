@@ -4,22 +4,19 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.TestInstance.Lifecycle;
-
+import decisions.PrehandedPlanDecisions;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
-import decisions.PrehandedPlanDecisions;
 import model.ApprovalFlow;
 import model.ApprovalFlow.BudgetDefinition;
 import model.Decision;
 import model.Plan;
 import model.User;
-
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
 import service.ApprovalFlowService;
 import service.DateAndTime;
 import service.PlanService;
@@ -27,7 +24,7 @@ import service.UserService;
 
 @TestInstance(Lifecycle.PER_CLASS)
 public class TestModel {
-    private DateAndTime dateAndTime = DateAndTime.getInstance();
+    private DateAndTime dateAndTime;
     private ArrayList<User> afApproversList1;
     private ArrayList<User> afApproversList2;
     private ApprovalFlow af1;
@@ -35,12 +32,15 @@ public class TestModel {
     private HashMap decisions;
     private ApprovalFlowService afService;
     private PlanService planService;
+    private UserService userService;
 
     @BeforeAll
     void setUp(){
         decisions = PrehandedPlanDecisions.getDecisions();
-        afService = ApprovalFlowService.getInstance();
+        dateAndTime = DateAndTime.getInstance();
         planService = PlanService.getInstance();
+        afService = ApprovalFlowService.getInstance();
+        userService = UserService.getInstance();
         generateUsersList();
         generateAFs();
     }
@@ -60,7 +60,7 @@ public class TestModel {
     }
 
     private User generateTestingUser(String index) {
-        User user =  UserService.createUser("approver".concat(index), index.concat("@domain.com"));
+        User user =  userService.createUser("approver".concat(index), index.concat("@domain.com"));
         System.out.printf("%s add-user %d %s %s \n",
             dateAndTime.getCurrentTimeAndDate(), user.getId(), user.getEmail(), user.getName());
         return user;
@@ -96,7 +96,5 @@ public class TestModel {
         assertThat(af1.getBudgetLimit(), equalTo(700.0));
         assertThat(BudgetDefinition.valueOf(af1.getBudgetDefinition()),
             equalTo(BudgetDefinition.LOWER));
-
     }
-
 }
